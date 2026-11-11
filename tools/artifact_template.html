@@ -1,0 +1,1032 @@
+<title>项目面试演练</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a rehearsal desk. Cue cards line the left rail, one question card sits in focus, and the seven project binders live behind tabs. */
+:root {
+  --bg: #edf0ed;
+  --surface: #ffffff;
+  --sunken: #e3e8e4;
+  --ink: #16202a;
+  --muted: #56636e;
+  --line: #d2dad4;
+  --line-strong: #b3beb6;
+  --accent: #0b6b62;
+  --accent-ink: #ffffff;
+  --accent-soft: #d3ebe6;
+  --warn: #8a5300;
+  --warn-soft: #f9ebcc;
+  --good: #23703a;
+  --good-soft: #d9eedd;
+  --bad: #a3321f;
+  --bad-soft: #f5dbd5;
+  --plate: #fafbf9;
+  --plate-line: #d6ddd8;
+  --focus: #1f6fd1;
+  --f-display: "IBM Plex Sans Condensed", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --f-body: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --head-h: 118px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10161a; --surface: #172027; --sunken: #0c1114; --ink: #e2e8eb; --muted: #95a3ad;
+    --line: #27323a; --line-strong: #3b4953; --accent: #4cb8aa; --accent-ink: #04201c; --accent-soft: #143530;
+    --warn: #e3a64e; --warn-soft: #33260f; --good: #6cc684; --good-soft: #14301c; --bad: #f0806f; --bad-soft: #3a1914;
+    --plate: #e9ede9; --plate-line: #c4ccc6; --focus: #6aaef5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10161a; --surface: #172027; --sunken: #0c1114; --ink: #e2e8eb; --muted: #95a3ad;
+  --line: #27323a; --line-strong: #3b4953; --accent: #4cb8aa; --accent-ink: #04201c; --accent-soft: #143530;
+  --warn: #e3a64e; --warn-soft: #33260f; --good: #6cc684; --good-soft: #14301c; --bad: #f0806f; --bad-soft: #3a1914;
+  --plate: #e9ede9; --plate-line: #c4ccc6; --focus: #6aaef5;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+* { box-sizing: border-box; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.25; }
+p { margin: 0; }
+a { color: var(--accent); }
+code { font-family: var(--f-mono); font-size: 0.88em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
+pre { font-family: var(--f-mono); font-size: 13px; background: var(--sunken); padding: 12px 14px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+[lang="en"] { hyphens: manual; }
+
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.inner { max-width: 1200px; margin: 0 auto; }
+
+/* ---------- 顶栏 ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; padding-block: 14px 8px; }
+.brand h1 { font-size: 1.45rem; font-weight: 600; letter-spacing: 0.01em; }
+.brand p { color: var(--muted); font-size: 13px; }
+.summary { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.summary .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
+.summary .sum-item { display: inline-flex; align-items: center; gap: 6px; }
+.sync { font-size: 12px; color: var(--muted); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: thin; margin-bottom: -1px; }
+.tabs a { flex: none; padding: 8px 12px 9px; color: var(--muted); text-decoration: none; font-size: 14px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 500; }
+.tabs .tab-label { flex: none; align-self: center; padding: 0 4px 0 14px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.tabs .count { font-family: var(--f-mono); font-size: 12px; color: var(--warn); }
+
+main { padding-block: 22px 64px; }
+
+/* ---------- 状态点 ---------- */
+.dot { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--line-strong); background: transparent; }
+.dot-again { background: var(--warn); border-color: var(--warn); }
+.dot-known { background: var(--good); border-color: var(--good); }
+
+/* ---------- 练习 ---------- */
+.practice { display: grid; grid-template-columns: minmax(250px, 310px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.rail { position: sticky; top: calc(var(--head-h) + 14px); max-height: calc(100vh - var(--head-h) - 28px); overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.rail-box > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 2px 0 10px; font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; }
+.rail-box > summary::-webkit-details-marker { display: none; }
+.rail-box > summary .rc { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-weight: 400; }
+.filters { display: grid; gap: 10px; margin-bottom: 12px; }
+.filter-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font: inherit; font-size: 12.5px; line-height: 1.3; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }
+.chip:hover { border-color: var(--line-strong); color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .cn { font-family: var(--f-mono); font-size: 11px; opacity: 0.75; margin-left: 3px; }
+.qlist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.qlist li { border-bottom: 1px solid var(--line); }
+.qlist button { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 8px; cursor: pointer; border-radius: 6px; }
+.qlist button:hover { background: var(--sunken); }
+.qlist button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.qlist button[aria-current="true"] { background: var(--accent-soft); }
+.qlist .dot { margin-top: 6px; }
+.ql-meta { display: block; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+.ql-q { display: block; font-size: 13.5px; line-height: 1.45; color: var(--ink); }
+.empty { color: var(--muted); font-size: 13px; padding: 12px 4px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: clamp(18px, 3vw, 30px); min-width: 0; }
+.card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 14px; font-size: 12.5px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 6px; background: var(--sunken); color: var(--muted); }
+.tag-project { background: var(--accent-soft); color: var(--accent); font-weight: 500; text-decoration: none; }
+.tag-label { font-family: var(--f-mono); }
+.topics { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.pill { padding: 2px 9px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); color: var(--muted); }
+.pill-again { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.pill-known { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.q-en { font-size: clamp(1.3rem, 2.3vw, 1.7rem); font-weight: 600; letter-spacing: 0.005em; max-width: 46ch; }
+.q-zh { margin-top: 6px; color: var(--muted); font-size: 15px; }
+.followup { margin-top: 18px; padding: 12px 14px; border-radius: 8px; background: var(--accent-soft); display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.followup p { font-size: 14px; min-width: 0; }
+.followup .fq { font-weight: 600; }
+
+.answer { margin-top: 20px; }
+.answer-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; margin-bottom: 6px; }
+.answer-head label { font-weight: 600; font-size: 14px; }
+.timer { display: inline-flex; align-items: center; gap: 8px; font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.timer .tv { color: var(--ink); font-weight: 500; }
+.timer.over .tv { color: var(--warn); }
+textarea { display: block; width: 100%; min-height: 9.5rem; resize: vertical; font: inherit; font-size: 15px; line-height: 1.6; color: var(--ink); background: var(--bg); border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 14px; }
+textarea::placeholder { color: var(--muted); }
+textarea:focus { outline: 2px solid var(--focus); outline-offset: 0; border-color: transparent; }
+.hint { margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.flash { color: var(--bad); }
+
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; }
+.btn { font: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--ink); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn-primary:hover { border-color: var(--accent); filter: brightness(1.06); }
+.btn-quiet { border-color: transparent; background: transparent; color: var(--accent); padding-inline: 6px; }
+.btn-quiet:hover { border-color: transparent; text-decoration: underline; }
+.btn-small { font-size: 13px; padding: 5px 10px; }
+.ai-note { font-size: 12.5px; color: var(--muted); }
+.kbd { font-family: var(--f-mono); font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+
+/* 反馈 */
+.feedback { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 16px; }
+.fb-wait { color: var(--muted); font-size: 14px; }
+.fb-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.fb-kind { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); width: 100%; }
+.pips { display: inline-flex; gap: 4px; }
+.pip { width: 18px; height: 8px; border-radius: 2px; background: var(--line); }
+.pip.on { background: var(--accent); }
+.fb-score { font-family: var(--f-mono); font-size: 15px; font-variant-numeric: tabular-nums; }
+.fb-verdict { flex: 1 1 260px; min-width: 0; font-weight: 500; }
+.fb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.fb-box { border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.fb-box h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.fb-box ul { margin: 0; padding-left: 1.1em; font-size: 14px; }
+.fb-miss { background: var(--warn-soft); }
+.fb-miss h4 { color: var(--warn); }
+.fb-risk { background: var(--bad-soft); }
+.fb-risk h4 { color: var(--bad); }
+.fb-better { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.fb-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.fb-row h4 { font-size: 13px; font-weight: 600; }
+.fb-better p { font-size: 15px; }
+.fb-follow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; background: var(--sunken); border-radius: 8px; padding: 12px 14px; }
+.fb-follow div { min-width: 0; flex: 1 1 280px; }
+.fb-follow h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+
+/* 参考 */
+.reference { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.ref-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; }
+.reference h3 { font-size: 1.05rem; font-weight: 600; }
+.ref-score { font-family: var(--f-mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ref-points { list-style: none; margin: 10px 0 18px; padding: 0; display: grid; gap: 2px; counter-reset: pt; }
+.ref-points li { counter-increment: pt; }
+.ref-points label { display: grid; grid-template-columns: 22px 26px minmax(0, 1fr); gap: 2px; align-items: start; padding: 8px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.ref-points label:hover { background: var(--sunken); }
+.ref-points label::before { content: counter(pt); grid-column: 2; grid-row: 1; font-family: var(--f-mono); font-size: 12px; color: var(--muted); padding-top: 2px; }
+.ref-points input { grid-column: 1; grid-row: 1; margin: 4px 0 0; accent-color: var(--accent); width: 15px; height: 15px; }
+.ref-points .pt { grid-column: 3; grid-row: 1; min-width: 0; }
+.ref-points .pt ul, .ref-points .pt ol { margin: 4px 0 0; padding-left: 1.2em; }
+.ref-points .pt table { font-size: 13px; }
+.ref-points input:checked ~ .pt { color: var(--muted); }
+.ref-en { margin: 10px 0 0; padding: 12px 14px; background: var(--sunken); border-radius: 8px; font-size: 15px; }
+.ref-extra { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.ref-extra blockquote { margin: 0; }
+
+.card-foot { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.mark { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+.mark button { font: inherit; font-size: 14px; padding: 8px 14px; border: 0; background: var(--surface); color: var(--muted); cursor: pointer; }
+.mark button + button { border-left: 1px solid var(--line-strong); }
+.mark button[data-mark="again"][aria-pressed="true"] { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+.mark button[data-mark="known"][aria-pressed="true"] { background: var(--good-soft); color: var(--good); font-weight: 600; }
+.nav-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- 项目手册 ---------- */
+.hb { max-width: 1040px; }
+.hb h3 { font-size: 1.2rem; font-weight: 600; margin: 34px 0 12px; }
+.hb h4 { font-size: 0.98rem; font-weight: 600; margin: 16px 0 6px; }
+.eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.hb-head { display: grid; gap: 10px; }
+.hb-resume { font-family: var(--f-mono); font-size: 13px; color: var(--muted); line-height: 1.55; max-width: 92ch; }
+.hb-resume p, .hb-resume ul { margin: 0; }
+.hb-resume ul { padding-left: 1.2em; }
+.hb-title { font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 600; margin-top: 6px; }
+.hb-one { font-size: 16.5px; max-width: 70ch; }
+.hb-one-en { color: var(--muted); max-width: 75ch; }
+.callout { border-radius: 8px; padding: 12px 14px; background: var(--sunken); font-size: 14px; max-width: 80ch; }
+.callout p + p, .callout p + ul, .callout ul + p { margin-top: 6px; }
+.callout ul { margin: 6px 0 0; padding-left: 1.2em; }
+.callout-warn { background: var(--warn-soft); }
+.hb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 0 32px; }
+.hb-col { min-width: 0; }
+.pitch { margin: 0 0 8px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; font-size: 15.5px; }
+.hb-zh { color: var(--muted); font-size: 14px; }
+.hb-steps { padding-left: 1.3em; display: grid; gap: 10px; margin: 0; }
+.hb-steps em { color: var(--muted); }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; border-bottom-color: var(--line-strong); }
+td { min-width: 7em; }
+.hb-qs { border-top: 1px solid var(--line); }
+.hb-q { border-bottom: 1px solid var(--line); }
+.hb-q > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; padding: 12px 6px; }
+.hb-q > summary::-webkit-details-marker { display: none; }
+.hb-q > summary:hover { background: var(--sunken); }
+.hb-qn { font-family: var(--f-mono); color: var(--accent); font-weight: 500; padding-top: 1px; }
+.hb-qt { display: grid; gap: 2px; font-weight: 500; }
+.hb-qzh { color: var(--muted); font-weight: 400; font-size: 14px; }
+.hb-qbody { padding: 0 6px 18px 48px; }
+.hb-qbody ul, .hb-qbody ol { padding-left: 1.2em; }
+.hb-points li + li { margin-top: 6px; }
+.hb-qbody blockquote { margin: 0 0 12px; padding: 12px 14px; background: var(--sunken); border-radius: 8px; }
+.hb-what { max-width: 980px; }
+.hb-what > p, .hb-what > ul, .hb-what > ol { max-width: 75ch; }
+.hb-what ul, .hb-what ol { padding-left: 1.2em; }
+.hb-what blockquote { margin: 0; padding-left: 12px; border-left: 3px solid var(--line-strong); }
+.plate { margin: 16px 0 20px; padding: 18px; background: var(--plate); border: 1px solid var(--plate-line); border-radius: 10px; }
+.plate-scroll { overflow-x: auto; }
+.plate svg { display: block; margin: 0 auto; height: auto; }
+
+/* ---------- 面试前核对 ---------- */
+.cl { max-width: 900px; }
+.cl-head { display: grid; gap: 6px; margin-bottom: 18px; }
+.cl-head h2 { font-size: 1.5rem; font-weight: 600; }
+.cl-head p { color: var(--muted); max-width: 70ch; }
+.cl-progress { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--ink) !important; }
+.cl-group { margin-top: 22px; }
+.cl-group h3 { font-size: 1.05rem; font-weight: 600; display: flex; gap: 10px; align-items: baseline; }
+.cl-group h3 a { font-family: var(--f-body); font-size: 13px; font-weight: 400; }
+.cl-list { list-style: none; margin: 8px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.cl-list li { border-bottom: 1px solid var(--line); }
+.cl-list label { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; padding: 10px 6px; cursor: pointer; font-size: 14px; }
+.cl-list input { margin: 4px 0 0; width: 15px; height: 15px; accent-color: var(--accent); }
+.cl-where { display: inline-block; font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); margin-right: 8px; }
+.cl-text p, .cl-text ul { margin: 0; }
+.cl-text ul { padding-left: 1.2em; }
+.cl-list input:checked + .cl-body { color: var(--muted); }
+
+@media (max-width: 860px) {
+  .practice { grid-template-columns: minmax(0, 1fr); }
+  .rail { position: static; max-height: none; overflow: visible; padding-right: 0; }
+  .qlist { max-height: 46vh; overflow-y: auto; }
+  .hb-qbody { padding-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+</style>
+
+<div class="top wrap" id="top">
+  <div class="inner">
+    <div class="top-row">
+      <div class="brand">
+        <h1>项目面试演练</h1>
+        <p>7 个项目 · 42 道题 · 先开口讲，再写下来，最后对答案</p>
+      </div>
+      <div class="summary" id="summary" aria-live="polite"></div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="页面"></nav>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="inner">
+    <section class="view" id="view-practice">
+      <div class="practice">
+        <aside class="rail" aria-label="题目列表">
+          <details class="rail-box" id="rail-box" open>
+            <summary>题目 <span class="rc" id="rail-count"></span></summary>
+            <div class="filters">
+              <div><p class="filter-label">项目</p><div class="chips" id="f-project"></div></div>
+              <div><p class="filter-label">主题</p><div class="chips" id="f-topic"></div></div>
+              <div><p class="filter-label">练习状态</p><div class="chips" id="f-status"></div></div>
+            </div>
+            <ol class="qlist" id="qlist"></ol>
+          </details>
+        </aside>
+
+        <article class="card" id="card">
+          <div class="card-meta">
+            <a class="tag tag-project" id="c-project" href="#practice"></a>
+            <span class="tag tag-label" id="c-label"></span>
+            <span id="c-topics" class="topics"></span>
+            <span class="pill" id="c-status"></span>
+          </div>
+          <h2 class="q-en" id="c-q-en" lang="en"></h2>
+          <p class="q-zh" id="c-q-zh"></p>
+
+          <div class="followup" id="followup" hidden>
+            <p>正在回答追问：<span class="fq" id="followup-q" lang="en"></span></p>
+            <button type="button" class="btn btn-small" id="btn-exit-follow">回到原题</button>
+          </div>
+
+          <div class="answer">
+            <div class="answer-head">
+              <label for="answer">你的回答</label>
+              <span class="timer" id="timer"><span class="tv" id="timer-val">0:00</span><span>目标 <span id="timer-target">2:00</span></span><button type="button" class="btn btn-quiet btn-small" id="timer-btn">开始计时</button></span>
+            </div>
+            <textarea id="answer" rows="7" placeholder="先对着屏幕讲一遍，再把讲的要点打在这里。中文、英文、混着写都可以。"></textarea>
+            <p class="hint" id="answer-hint">可以用系统听写把口述转成文字（macOS 连按两下 Fn）。<span class="kbd">⌘</span> / <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> 提交。</p>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="btn-grade" hidden>让 Claude 打分</button>
+            <button type="button" class="btn" id="btn-stop" hidden>停止</button>
+            <button type="button" class="btn" id="btn-reveal">看参考答案</button>
+            <span class="ai-note" id="ai-note">正在连接 Claude…</span>
+          </div>
+
+          <section class="feedback" id="feedback" hidden aria-live="polite"></section>
+
+          <section class="reference" id="reference" hidden>
+            <div class="ref-head"><h3>参考要点</h3><span class="ref-score" id="ref-score"></span></div>
+            <p class="hint">讲到了就勾上。Claude 打分后会自动勾上它认为你讲到的点，你可以再改。</p>
+            <ol class="ref-points" id="ref-points"></ol>
+            <h3>参考回答（EN）</h3>
+            <blockquote class="ref-en" id="ref-en" lang="en"></blockquote>
+            <div class="ref-extra" id="ref-extra"></div>
+          </section>
+
+          <div class="card-foot">
+            <div class="mark" role="group" aria-label="这题练得怎么样">
+              <button type="button" data-mark="again" aria-pressed="false">还要再练</button>
+              <button type="button" data-mark="known" aria-pressed="false">已经会了</button>
+            </div>
+            <div class="nav-btns">
+              <button type="button" class="btn" id="btn-prev">上一题</button>
+              <button type="button" class="btn" id="btn-random">随机一题</button>
+              <button type="button" class="btn btn-primary" id="btn-next">下一题</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+<!--__HANDBOOK__-->
+
+    <section class="view cl" id="view-checklist" hidden>
+      <div class="cl-head">
+        <h2>面试前核对</h2>
+        <p>下面这些说法，要么本地文档里没有依据，要么和简历对不上。面试前想好怎么讲，再勾掉。</p>
+        <p class="cl-progress" id="cl-progress"></p>
+      </div>
+      <div id="cl-groups"></div>
+    </section>
+  </div>
+</main>
+
+<script type="application/json" id="prep-data">/*__DATA__*/</script>
+<script>
+(function () {
+  'use strict';
+  var DATA = JSON.parse(document.getElementById('prep-data').textContent);
+  var PROJECTS = DATA.projects;
+  var ITEMS = DATA.items;
+  var TOPICS = DATA.topics;
+  var PBY = {}, IBY = {}, TBY = {};
+  PROJECTS.forEach(function (p) { PBY[p.id] = p; });
+  ITEMS.forEach(function (i) { IBY[i.id] = i; });
+  TOPICS.forEach(function (t) { TBY[t.id] = t; });
+  var STATUS = [
+    { id: 'all', label: '全部' },
+    { id: 'new', label: '没练过' },
+    { id: 'again', label: '还要再练' },
+    { id: 'known', label: '已经会了' }
+  ];
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function fmt(sec) { var m = Math.floor(sec / 60), s = Math.floor(sec % 60); return m + ':' + (s < 10 ? '0' : '') + s; }
+
+  /* ---------------- 进度：先存浏览器，可用时同步到 claude.ai 账户 ---------------- */
+  var LS_KEY = 'interview-prep-progress-v1';
+  var UI_KEY = 'interview-prep-ui-v1';
+  var store = { items: {}, checklist: {}, checklistAt: 0 };
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      var v = JSON.parse(raw);
+      if (v && typeof v === 'object') {
+        store.items = v.items || {};
+        store.checklist = v.checklist || {};
+        store.checklistAt = v.checklistAt || 0;
+      }
+    }
+  } catch (e) {}
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (e) {} }
+
+  var col = null, chains = {}, sync = 'local';
+  function setSync(s) { sync = s; renderSummary(); }
+  function writeDoc(id, body) {
+    if (!col) return;
+    var c = col;
+    var prev = chains[id] || Promise.resolve();
+    chains[id] = prev.then(function () { return c.doc(id).set(body); }).catch(function (e) {
+      var code = e && e.code;
+      if (code === 'invalid_argument' || code === 'revoked' || code === 'not_granted' || code === 'quota_exceeded') { col = null; setSync('local'); }
+    });
+  }
+  function rec(id) { return store.items[id] || {}; }
+  function statusOf(id) { return rec(id).status || 'new'; }
+  function updateRec(id, patch, opts) {
+    var r = Object.assign({}, rec(id), patch, { at: Date.now() });
+    store.items[id] = r;
+    saveLocal();
+    if (!opts || !opts.localOnly) writeDoc(id, r);
+    return r;
+  }
+  function setChecklist(key, val) {
+    var next = Object.assign({}, store.checklist);
+    if (val) next[key] = true; else delete next[key];
+    store.checklist = next;
+    store.checklistAt = Date.now();
+    saveLocal();
+    writeDoc('checklist', { done: store.checklist, at: store.checklistAt });
+  }
+
+  function initDb() {
+    if (!window.claude || typeof window.claude.use !== 'function') return;
+    setSync('connecting');
+    Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (res) {
+      var db = res[0], user = res[1];
+      if (!db || !user) { setSync('local'); return; }
+      return user.id().then(function (uid) {
+        if (!uid) { setSync('local'); return; }
+        try { col = db.collection('data/users/' + uid); } catch (e) { col = null; setSync('local'); return; }
+        var first = true;
+        var slow = setTimeout(function () { if (sync === 'connecting') setSync('slow'); }, 10000);
+        col.onSnapshot(function (snap) {
+          var remote = {}, changed = false;
+          snap.docs.forEach(function (d) {
+            var val = d.data();
+            if (!val) return;
+            remote[d.id] = val;
+            if (d.id === 'checklist') {
+              if ((val.at || 0) > store.checklistAt) { store.checklist = Object.assign({}, val.done || {}); store.checklistAt = val.at || 0; changed = true; }
+              return;
+            }
+            if (!IBY[d.id]) return;
+            var local = store.items[d.id];
+            if (!local || (val.at || 0) > (local.at || 0)) { store.items[d.id] = JSON.parse(JSON.stringify(val)); changed = true; }
+          });
+          if (!snap.metadata.fromCache) {
+            clearTimeout(slow);
+            if (sync !== 'synced') setSync('synced');
+            if (first) {
+              first = false;
+              setTimeout(function () {
+                Object.keys(store.items).forEach(function (id) {
+                  var r = store.items[id];
+                  if (!remote[id] || (remote[id].at || 0) < (r.at || 0)) writeDoc(id, r);
+                });
+                if (store.checklistAt && (!remote.checklist || (remote.checklist.at || 0) < store.checklistAt)) writeDoc('checklist', { done: store.checklist, at: store.checklistAt });
+              }, 0);
+            }
+          }
+          if (changed) { saveLocal(); refreshFromStore(); }
+        }, function () { clearTimeout(slow); col = null; setSync('local'); });
+      });
+    }).catch(function () { setSync('local'); });
+  }
+
+  /* ---------------- Claude 打分 ---------------- */
+  var sample = null;
+  function setAi(s, note) {
+    sample = s;
+    $('btn-grade').hidden = !s;
+    $('ai-note').textContent = note || '';
+  }
+  function initSample() {
+    if (!window.claude || typeof window.claude.use !== 'function') {
+      setAi(null, '在 claude.ai 里打开这个页面才能让 Claude 打分，现在可以看参考要点自评。');
+      return;
+    }
+    window.claude.use('sample').then(function (s) {
+      setAi(s, s ? '第一次打分会先请你允许页面调用 Claude。' : '这个页面现在不能调用 Claude，可以看参考要点自评。');
+    }).catch(function () { setAi(null, '这个页面现在不能调用 Claude，可以看参考要点自评。'); });
+  }
+
+  /* ---------------- 界面状态 ---------------- */
+  var ui = { fp: 'all', ft: 'all', fs: 'all', current: null };
+  try {
+    var u = JSON.parse(localStorage.getItem(UI_KEY) || '{}');
+    if (u && typeof u === 'object') {
+      if (u.fp && (u.fp === 'all' || PBY[u.fp])) ui.fp = u.fp;
+      if (u.ft && (u.ft === 'all' || TBY[u.ft])) ui.ft = u.ft;
+      if (u.fs && STATUS.some(function (s) { return s.id === u.fs; })) ui.fs = u.fs;
+      if (u.current && IBY[u.current]) ui.current = u.current;
+    }
+  } catch (e) {}
+  function saveUi() { try { localStorage.setItem(UI_KEY, JSON.stringify(ui)); } catch (e) {} }
+  var followUp = null;
+
+  function filtered() {
+    return ITEMS.filter(function (i) {
+      return (ui.fp === 'all' || i.pid === ui.fp) &&
+        (ui.ft === 'all' || i.topics.indexOf(ui.ft) >= 0) &&
+        (ui.fs === 'all' || statusOf(i.id) === ui.fs);
+    });
+  }
+
+  /* ---------------- 顶栏 ---------------- */
+  function renderTabs() {
+    var nav = $('tabs');
+    nav.replaceChildren();
+    var a = el('a', null, '练习'); a.href = '#practice'; a.dataset.view = 'practice'; nav.append(a);
+    nav.append(el('span', 'tab-label', '项目手册'));
+    PROJECTS.forEach(function (p) { var t = el('a', null, p.label); t.href = '#' + p.id; t.dataset.view = p.id; nav.append(t); });
+    var c = el('a', null, '面试前核对 '); c.href = '#checklist'; c.dataset.view = 'checklist';
+    c.append(el('span', 'count', '')); nav.append(c);
+  }
+  function renderSummary() {
+    var n = { new: 0, again: 0, known: 0 };
+    ITEMS.forEach(function (i) { n[statusOf(i.id)]++; });
+    var box = $('summary');
+    box.replaceChildren();
+    [['known', '已经会了'], ['again', '还要再练'], ['new', '没练过']].forEach(function (s) {
+      var it = el('span', 'sum-item');
+      it.append(el('span', 'dot dot-' + s[0]), el('span', null, s[1] + ' '), el('span', 'num', String(n[s[0]])));
+      box.append(it);
+    });
+    var msg = {
+      local: '进度保存在这个浏览器',
+      connecting: '正在连接你的账户…',
+      slow: '暂时连不上账户，进度先存在这个浏览器',
+      synced: '进度已同步到你的 claude.ai 账户'
+    }[sync];
+    box.append(el('span', 'sync', msg));
+    var left = 0, total = 0;
+    PROJECTS.forEach(function (p) { p.checklist.forEach(function (c) { total++; if (!store.checklist[c.key]) left++; }); });
+    var cnt = document.querySelector('.tabs .count');
+    if (cnt) cnt.textContent = left ? String(left) : '';
+  }
+
+  /* ---------------- 题目列表与筛选 ---------------- */
+  function chip(label, pressed, count, onClick) {
+    var b = el('button', 'chip', label);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    if (count != null) b.append(el('span', 'cn', String(count)));
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function renderFilters() {
+    var fp = $('f-project'); fp.replaceChildren();
+    fp.append(chip('全部', ui.fp === 'all', null, function () { ui.fp = 'all'; onFilter(); }));
+    PROJECTS.forEach(function (p) { fp.append(chip(p.label, ui.fp === p.id, null, function () { ui.fp = p.id; onFilter(); })); });
+    var ft = $('f-topic'); ft.replaceChildren();
+    ft.append(chip('全部', ui.ft === 'all', null, function () { ui.ft = 'all'; onFilter(); }));
+    TOPICS.forEach(function (t) {
+      var n = ITEMS.filter(function (i) { return i.topics.indexOf(t.id) >= 0 && (ui.fp === 'all' || i.pid === ui.fp); }).length;
+      if (!n) return;
+      ft.append(chip(t.label, ui.ft === t.id, n, function () { ui.ft = t.id; onFilter(); }));
+    });
+    var fs = $('f-status'); fs.replaceChildren();
+    STATUS.forEach(function (s) { fs.append(chip(s.label, ui.fs === s.id, null, function () { ui.fs = s.id; onFilter(); })); });
+  }
+  function onFilter() {
+    if (ui.ft !== 'all' && ui.fp !== 'all' && !ITEMS.some(function (i) { return i.pid === ui.fp && i.topics.indexOf(ui.ft) >= 0; })) ui.ft = 'all';
+    saveUi();
+    renderFilters();
+    renderList();
+  }
+  function renderList() {
+    var list = filtered();
+    $('rail-count').textContent = list.length + ' / ' + ITEMS.length;
+    var ol = $('qlist');
+    ol.replaceChildren();
+    if (!list.length) { ol.append(el('li', 'empty', '这个组合下没有题，换个筛选试试。')); return; }
+    list.forEach(function (i) {
+      var li = el('li');
+      var b = el('button');
+      b.type = 'button';
+      if (i.id === ui.current) b.setAttribute('aria-current', 'true');
+      b.append(el('span', 'dot dot-' + statusOf(i.id)));
+      var t = el('span');
+      t.append(el('span', 'ql-meta', PBY[i.pid].label + ' · ' + i.label), el('span', 'ql-q', i.q_zh));
+      b.append(t);
+      b.addEventListener('click', function () { select(i.id); if (window.matchMedia('(max-width: 860px)').matches) $('card').scrollIntoView({ block: 'start' }); });
+      li.append(b);
+      ol.append(li);
+    });
+  }
+
+  /* ---------------- 题卡 ---------------- */
+  function select(id) {
+    if (!IBY[id]) return;
+    stopGrading();
+    ui.current = id;
+    followUp = null;
+    saveUi();
+    loadCard();
+    renderList();
+  }
+  function cur() { return IBY[ui.current]; }
+
+  function loadCard() {
+    var item = cur();
+    var p = PBY[item.pid];
+    var r = rec(item.id);
+    $('c-project').textContent = p.label;
+    $('c-project').href = '#' + p.id;
+    $('c-label').textContent = item.label;
+    var tw = $('c-topics'); tw.replaceChildren();
+    item.topics.forEach(function (t) { if (TBY[t]) tw.append(el('span', 'tag', TBY[t].label)); });
+    renderStatusPill();
+    $('c-q-en').textContent = item.q_en;
+    $('c-q-zh').textContent = item.q_zh;
+    $('followup').hidden = true;
+    var ta = $('answer');
+    ta.value = r.answer || '';
+    ta.placeholder = '先对着屏幕讲一遍，再把讲的要点打在这里。中文、英文、混着写都可以。';
+    $('answer-hint').classList.remove('flash');
+    timerReset(item.target);
+    renderReference();
+    var fb = $('feedback');
+    if (r.feedback) { renderFeedback(r.feedback, false); $('reference').hidden = false; }
+    else { fb.hidden = true; fb.replaceChildren(); $('reference').hidden = !r.revealed; }
+    renderMark();
+  }
+  function renderStatusPill() {
+    var s = statusOf(ui.current);
+    var pill = $('c-status');
+    pill.className = 'pill' + (s === 'new' ? '' : ' pill-' + s);
+    pill.textContent = { new: '没练过', again: '还要再练', known: '已经会了' }[s];
+  }
+  function renderReference() {
+    var item = cur();
+    var r = rec(item.id);
+    var checks = r.checks || [];
+    var ol = $('ref-points');
+    ol.replaceChildren();
+    item.points.forEach(function (html, idx) {
+      var li = el('li');
+      var lab = el('label');
+      var cb = el('input'); cb.type = 'checkbox'; cb.checked = !!checks[idx];
+      cb.addEventListener('change', function () {
+        var next = (rec(item.id).checks || []).slice();
+        for (var k = 0; k < item.points.length; k++) next[k] = !!next[k];
+        next[idx] = cb.checked;
+        updateRec(item.id, { checks: next });
+        renderRefScore();
+      });
+      var pt = el('span', 'pt');
+      pt.innerHTML = html;
+      lab.append(cb, pt);
+      li.append(lab);
+      ol.append(li);
+    });
+    $('ref-en').textContent = item.en;
+    $('ref-extra').innerHTML = item.extra || '';
+    renderRefScore();
+  }
+  function renderRefScore() {
+    var item = cur();
+    var checks = rec(item.id).checks || [];
+    var n = 0;
+    for (var k = 0; k < item.points.length; k++) if (checks[k]) n++;
+    $('ref-score').textContent = '讲到了 ' + n + ' / ' + item.points.length;
+  }
+  function showReference() {
+    $('reference').hidden = false;
+    var item = cur();
+    var patch = { revealed: true };
+    var a = $('answer').value.trim();
+    if (!followUp && a !== (rec(item.id).answer || '')) patch.answer = a;
+    updateRec(item.id, patch);
+  }
+  function renderMark() {
+    var s = statusOf(ui.current);
+    document.querySelectorAll('.mark button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mark === s ? 'true' : 'false'); });
+  }
+  function setMark(m) {
+    var id = ui.current;
+    var nextStatus = statusOf(id) === m ? 'new' : m;
+    updateRec(id, { status: nextStatus === 'new' ? null : nextStatus });
+    renderMark(); renderStatusPill(); renderList(); renderSummary();
+  }
+
+  /* ---------------- 计时 ---------------- */
+  var tStart = 0, tElapsed = 0, tHandle = null, tTarget = 120;
+  function timerRender() {
+    var sec = tElapsed + (tHandle ? (Date.now() - tStart) / 1000 : 0);
+    $('timer-val').textContent = fmt(sec);
+    $('timer').classList.toggle('over', sec > tTarget);
+  }
+  function timerStart() { if (tHandle) return; tStart = Date.now(); tHandle = setInterval(timerRender, 250); $('timer-btn').textContent = '暂停'; timerRender(); }
+  function timerStop() { if (!tHandle) return; tElapsed += (Date.now() - tStart) / 1000; clearInterval(tHandle); tHandle = null; $('timer-btn').textContent = '继续计时'; timerRender(); }
+  function timerReset(target) {
+    if (tHandle) { clearInterval(tHandle); tHandle = null; }
+    tElapsed = 0; tTarget = target || 120;
+    $('timer-target').textContent = fmt(tTarget);
+    $('timer-btn').textContent = '开始计时';
+    timerRender();
+  }
+
+  /* ---------------- 打分 ---------------- */
+  var ctl = null;
+  function busy(on) {
+    $('btn-grade').disabled = on;
+    $('btn-grade').textContent = on ? '打分中…' : '让 Claude 打分';
+    $('btn-stop').hidden = !on;
+  }
+  function stopGrading() { if (ctl) { ctl.abort(); ctl = null; } }
+
+  function buildPrompt(item, answer, fu) {
+    var p = PBY[item.pid];
+    var pts = item.points_text.map(function (t, i) { return (i + 1) + '. ' + t; }).join('\n');
+    var L = [
+      "You are a senior engineering interviewer hiring a Senior Data & AI Platform Engineer. Grade the candidate's answer to one interview question about a project on their own résumé.",
+      'Judge substance, not language: the candidate may answer in English, Chinese or a mix, and the answer may be rough notes of what they would say out loud. Reward leading with the conclusion, concrete mechanisms, real numbers, explicit trade-offs and honesty about limits. Penalize claims that contradict the reference, vague buzzwords, and missing the key decision.',
+      '',
+      'PROJECT CONTEXT',
+      p.context.slice(0, 5000),
+      ''
+    ];
+    if (fu) {
+      L.push('ORIGINAL QUESTION', item.q_en, '', 'ORIGINAL REFERENCE (background only)', pts, item.en, '',
+        'FOLLOW-UP QUESTION BEING ANSWERED', fu, '',
+        'There are no reference points for this follow-up. Use the project context and the original reference as background. If the answer states facts the background does not support, list them under "risky" starting with "需要核对：". "covered" must be an empty array.');
+    } else {
+      L.push('QUESTION', item.q_en + ' / ' + item.q_zh, '', 'REFERENCE KEY POINTS', pts, '', 'REFERENCE ANSWER (English)', item.en);
+      if (item.kind === 'pitch') L.push('', 'This is the 30-second opening pitch. Also judge whether it fits in about 30 seconds of speech; the reference key points are the longer two-minute version, so the pitch does not need all of them.');
+    }
+    L.push('', 'CANDIDATE ANSWER', '<<<', answer.slice(0, 6000), '>>>', '',
+      'Reply with only one JSON object and no other text:',
+      '{"score": <integer 1-5>, "verdict": "<一句中文总评>", "covered": [<numbers of the reference key points the answer clearly covers>], "missing": ["<中文：最重要的遗漏，最多 3 条>"], "risky": ["<中文：不准确、和参考矛盾、或面试官会追着问的说法，最多 3 条，没有就给空数组>"], "better_en": "<a stronger spoken English answer, 3-5 sentences, that keeps the candidate\'s own good parts>", "follow_up": "<the most likely next question from the interviewer, in English>"}',
+      'Score guide: 5 = would impress a senior interviewer; 4 = solid with small gaps; 3 = correct but thin or unstructured; 2 = misses the main point; 1 = wrong or off-topic.');
+    return L.join('\n');
+  }
+  function normalize(r, n) {
+    r = r && typeof r === 'object' ? r : {};
+    var s = Math.round(Number(r.score));
+    if (!(s >= 1)) s = 1;
+    if (s > 5) s = 5;
+    function strs(x) { return Array.isArray(x) ? x.filter(function (v) { return typeof v === 'string' && v.trim(); }).slice(0, 4) : []; }
+    var cov = [];
+    if (Array.isArray(r.covered)) r.covered.forEach(function (k) { k = Number(k); if (k >= 1 && k <= n && Math.floor(k) === k && cov.indexOf(k) < 0) cov.push(k); });
+    return {
+      score: s,
+      verdict: typeof r.verdict === 'string' ? r.verdict : '',
+      covered: cov,
+      missing: strs(r.missing),
+      risky: strs(r.risky),
+      better_en: typeof r.better_en === 'string' ? r.better_en : '',
+      follow_up: typeof r.follow_up === 'string' ? r.follow_up : ''
+    };
+  }
+  var ERR = {
+    rate_limited: '调用太频繁，或者 Claude 额度暂时用完了。过一会儿再点打分。',
+    session_expired: '登录已过期。重新登录 claude.ai 后再试。',
+    invalid_json: 'Claude 的回复格式没对上，再点一次打分。',
+    refused: 'Claude 没有评这段回答。改一下措辞再试。',
+    prompt_too_large: '回答太长了，删短一些再试。',
+    empty_completion: 'Claude 没有给出内容。改一下回答再试。'
+  };
+  var OFF = ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'];
+
+  function grade() {
+    if (!sample || ctl) return;
+    var item = cur();
+    var answer = $('answer').value.trim();
+    if (!answer) {
+      var h = $('answer-hint');
+      h.textContent = '先把你的回答写下来，再让 Claude 打分。';
+      h.classList.add('flash');
+      $('answer').focus();
+      return;
+    }
+    timerStop();
+    var fu = followUp;
+    var itemId = item.id;
+    ctl = new AbortController();
+    busy(true);
+    var fb = $('feedback');
+    fb.hidden = false;
+    fb.replaceChildren(el('p', 'fb-wait', 'Claude 正在看你的回答，通常要 10 到 40 秒。'));
+    if (!fu) updateRec(itemId, { answer: answer });
+    sample.json(buildPrompt(item, answer, fu), { signal: ctl.signal }).then(function (res) {
+      if (ui.current !== itemId) return;
+      var r = normalize(res, fu ? 0 : item.points.length);
+      if (fu) { renderFeedback(r, true); return; }
+      var checks = (rec(itemId).checks || []).slice();
+      for (var k = 0; k < item.points.length; k++) checks[k] = !!checks[k];
+      r.covered.forEach(function (c) { checks[c - 1] = true; });
+      var patch = { answer: answer, feedback: r, score: r.score, checks: checks, revealed: true };
+      if (statusOf(itemId) === 'new') patch.status = r.score >= 4 ? 'known' : 'again';
+      updateRec(itemId, patch);
+      renderFeedback(r, false);
+      renderReference();
+      $('reference').hidden = false;
+      renderMark(); renderStatusPill(); renderList(); renderSummary();
+    }).catch(function (e) {
+      var code = e && e.code;
+      if (code === 'cancelled') { fb.replaceChildren(el('p', 'fb-wait', '已停止打分。')); return; }
+      if (OFF.indexOf(code) >= 0) {
+        setAi(null, '这个页面没有被允许调用 Claude，可以看参考要点自评。');
+        fb.replaceChildren(el('p', 'fb-wait', '没法让 Claude 打分。点「看参考答案」对照要点自评。'));
+        return;
+      }
+      fb.replaceChildren(el('p', 'fb-wait', ERR[code] || '打分中断了，再点一次试试。'));
+    }).then(function () { busy(false); ctl = null; });
+  }
+
+  function renderFeedback(r, isFollow) {
+    var fb = $('feedback');
+    fb.hidden = false;
+    fb.replaceChildren();
+    var head = el('div', 'fb-head');
+    head.append(el('p', 'fb-kind', isFollow ? 'Claude 对追问的点评' : 'Claude 的点评'));
+    var pips = el('span', 'pips');
+    pips.setAttribute('aria-hidden', 'true');
+    for (var k = 1; k <= 5; k++) pips.append(el('span', 'pip' + (k <= r.score ? ' on' : '')));
+    head.append(pips, el('span', 'fb-score', r.score + ' / 5'));
+    if (r.verdict) head.append(el('p', 'fb-verdict', r.verdict));
+    fb.append(head);
+    if (r.missing.length || r.risky.length) {
+      var grid = el('div', 'fb-grid');
+      if (r.missing.length) grid.append(box('fb-box fb-miss', '漏掉的', r.missing));
+      if (r.risky.length) grid.append(box('fb-box fb-risk', '要小心的说法', r.risky));
+      fb.append(grid);
+    }
+    if (r.better_en) {
+      var better = el('div', 'fb-better');
+      var row = el('div', 'fb-row');
+      row.append(el('h4', null, '更好的说法'));
+      var copy = el('button', 'btn btn-quiet btn-small', '复制');
+      copy.type = 'button';
+      var para = el('p', null, r.better_en);
+      para.lang = 'en';
+      copy.addEventListener('click', function () {
+        var done = function () { copy.textContent = '已复制'; setTimeout(function () { copy.textContent = '复制'; }, 1500); };
+        var fallback = function () { var range = document.createRange(); range.selectNodeContents(para); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); copy.textContent = '已选中，按 ⌘C 复制'; };
+        try { navigator.clipboard.writeText(r.better_en).then(done, fallback); } catch (e) { fallback(); }
+      });
+      row.append(copy);
+      better.append(row, para);
+      fb.append(better);
+    }
+    if (r.follow_up && !isFollow) {
+      var f = el('div', 'fb-follow');
+      var d = el('div');
+      d.append(el('h4', null, '面试官可能接着问'));
+      var q = el('p', null, r.follow_up); q.lang = 'en';
+      d.append(q);
+      var go = el('button', 'btn', '回答这个追问');
+      go.type = 'button';
+      go.addEventListener('click', function () { startFollowUp(r.follow_up); });
+      f.append(d, go);
+      fb.append(f);
+    }
+  }
+  function box(cls, title, list) {
+    var b = el('div', cls);
+    b.append(el('h4', null, title));
+    var ul = el('ul');
+    list.forEach(function (t) { ul.append(el('li', null, t)); });
+    b.append(ul);
+    return b;
+  }
+  function startFollowUp(q) {
+    followUp = q;
+    $('followup-q').textContent = q;
+    $('followup').hidden = false;
+    var ta = $('answer');
+    ta.value = '';
+    ta.placeholder = '回答这个追问。答完点「让 Claude 打分」。';
+    $('feedback').hidden = true;
+    $('reference').hidden = true;
+    timerReset(90);
+    ta.focus();
+  }
+  function exitFollowUp() { stopGrading(); followUp = null; loadCard(); }
+
+  /* ---------------- 导航 ---------------- */
+  function step(dir) {
+    var list = filtered();
+    if (!list.length) return;
+    var idx = list.findIndex(function (i) { return i.id === ui.current; });
+    var next = idx < 0 ? 0 : (idx + dir + list.length) % list.length;
+    select(list[next].id);
+  }
+  function randomPick() {
+    var list = filtered().filter(function (i) { return i.id !== ui.current; });
+    if (!list.length) return;
+    var pool = list.filter(function (i) { return statusOf(i.id) !== 'known'; });
+    if (!pool.length) pool = list;
+    select(pool[Math.floor(Math.random() * pool.length)].id);
+  }
+
+  /* ---------------- 面试前核对 ---------------- */
+  function renderChecklist() {
+    var wrap = $('cl-groups');
+    wrap.replaceChildren();
+    var total = 0, done = 0;
+    PROJECTS.forEach(function (p) {
+      if (!p.checklist.length) return;
+      var g = el('section', 'cl-group');
+      var h = el('h3', null, p.title);
+      var a = el('a', null, '打开项目手册'); a.href = '#' + p.id;
+      h.append(a);
+      g.append(h);
+      var ul = el('ul', 'cl-list');
+      p.checklist.forEach(function (c) {
+        total++;
+        if (store.checklist[c.key]) done++;
+        var li = el('li');
+        var lab = el('label');
+        var cb = el('input'); cb.type = 'checkbox'; cb.checked = !!store.checklist[c.key];
+        cb.addEventListener('change', function () { setChecklist(c.key, cb.checked); renderChecklist(); renderSummary(); });
+        var body = el('span', 'cl-body');
+        body.append(el('span', 'cl-where', c.where));
+        var txt = el('span', 'cl-text'); txt.innerHTML = c.html;
+        body.append(txt);
+        lab.append(cb, body);
+        li.append(lab);
+        ul.append(li);
+      });
+      g.append(ul);
+      wrap.append(g);
+    });
+    $('cl-progress').textContent = '已核对 ' + done + ' / ' + total;
+  }
+
+  /* ---------------- 路由 ---------------- */
+  var VIEWS = ['practice', 'checklist'].concat(PROJECTS.map(function (p) { return p.id; }));
+  function route() {
+    var h = (location.hash || '').slice(1);
+    var v = VIEWS.indexOf(h) >= 0 ? h : 'practice';
+    $('view-practice').hidden = v !== 'practice';
+    $('view-checklist').hidden = v !== 'checklist';
+    document.querySelectorAll('.hb').forEach(function (s) { s.hidden = s.dataset.pid !== v; });
+    document.querySelectorAll('#tabs a').forEach(function (a) { if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (h && h !== 'practice') window.scrollTo(0, 0);
+  }
+
+  function refreshFromStore() {
+    renderSummary();
+    renderList();
+    renderChecklist();
+    if (document.activeElement !== $('answer') && !ctl && !followUp) loadCard();
+    else { renderMark(); renderStatusPill(); }
+  }
+
+  function measureHead() { document.documentElement.style.setProperty('--head-h', $('top').offsetHeight + 'px'); }
+
+  /* ---------------- 启动 ---------------- */
+  renderTabs();
+  if (!ui.current || !IBY[ui.current]) {
+    var list = filtered();
+    var first = list.find(function (i) { return statusOf(i.id) === 'new'; }) || list[0] || ITEMS[0];
+    ui.current = first.id;
+  }
+  renderFilters();
+  renderList();
+  loadCard();
+  renderSummary();
+  renderChecklist();
+  route();
+  measureHead();
+  if (window.matchMedia('(max-width: 860px)').matches) $('rail-box').removeAttribute('open');
+
+  window.addEventListener('hashchange', route);
+  window.addEventListener('resize', measureHead);
+  $('btn-grade').addEventListener('click', grade);
+  $('btn-stop').addEventListener('click', stopGrading);
+  $('btn-reveal').addEventListener('click', showReference);
+  $('btn-prev').addEventListener('click', function () { step(-1); });
+  $('btn-next').addEventListener('click', function () { step(1); });
+  $('btn-random').addEventListener('click', randomPick);
+  $('btn-exit-follow').addEventListener('click', exitFollowUp);
+  $('timer-btn').addEventListener('click', function () { if (tHandle) timerStop(); else timerStart(); });
+  document.querySelectorAll('.mark button').forEach(function (b) { b.addEventListener('click', function () { setMark(b.dataset.mark); }); });
+  var saveT = null;
+  $('answer').addEventListener('input', function () {
+    if (!tHandle && tElapsed === 0) timerStart();
+    var h = $('answer-hint');
+    if (h.classList.contains('flash')) { h.classList.remove('flash'); h.innerHTML = '可以用系统听写把口述转成文字（macOS 连按两下 Fn）。<span class="kbd">⌘</span> / <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> 提交。'; }
+    if (followUp) return;
+    var id = ui.current, val = $('answer').value;
+    clearTimeout(saveT);
+    saveT = setTimeout(function () { if (ui.current === id) updateRec(id, { answer: val }); }, 1500);
+  });
+  $('answer').addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); if (sample) grade(); else showReference(); }
+  });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-practice]');
+    if (!t) return;
+    var id = t.dataset.practice;
+    if (!IBY[id]) return;
+    if (!filtered().some(function (i) { return i.id === id; })) { ui.fp = 'all'; ui.ft = 'all'; ui.fs = 'all'; renderFilters(); }
+    select(id);
+    location.hash = 'practice';
+  });
+
+  initSample();
+  initDb();
+})();
+</script>
