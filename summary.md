@@ -1,0 +1,9 @@
+## Internal
+
+Sure, I've been with carmax a little over 4 and half years now, I started as a senior credit analyst and worked for CAF for two years. In that role, I build their single source of truth data mart origination data mart that capture all the finance applicaiton, credit decisioning, and loan collection. I also led the teradata to snowflake migration. Besides that, I worked with the platform team, my current team, to onboard a fully compliant azure databricks workspace with private inbound and deploy the compute with vnet integration to control the outbound traffic. I also built several packages to support their analytics workload running in local and databricks. 
+
+Then I move to the platform team, where we manage the EDW and BI. 
+
+For me, I am the tech lead for Fabric, and I lead the fabric migration, i created automated pipelines that migrate BI reporst automatically from power bi server to Fabric, and i configured all the hybrid connectivity for reports by provision data gateways in high availability. I also own the observability layer of the BI platform.
+For EDW, our team owns all the azure infra like adf, function app, batch, event hub, and on-prem vm, etc. And i was the main developer for disaster recovery, CI/CD modernization, and event based ingestion
+Besides that, I also worked on several AI initiatives, POCs in platform and data engieering. One effort focuses on putting guardrails around coding agents by moving Bash execution into isolated Azure sandboxes where we can use identity to control the blast radius.  And the other one is that created a shared agent harness and the chat UI inside platform team, so the team could ship agent faster and in a standardized way without rebuild wheels for UI, chat history, SSO, feedback loop, etc. I also built a Fabric observability Q&A agent on top of it, which the BI team still uses

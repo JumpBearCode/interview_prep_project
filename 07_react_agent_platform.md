@@ -38,60 +38,110 @@ FUAM 的 Azure 部署这块，我把 frontend 和 runtime 打进一个 Docker im
 
 ## 技术追问一：Streaming 到底怎么实现，SSE 在哪里嫁接？
 
-**这里有两层桥接：先把同步 agent 的事件接到异步 SSE，再把 runtime 的 SSE 接到浏览器。** frontend server 不重新解析模型输出，也不等完整回答生成后才返回。
+**每次聊天请求创建自己的 queue 和 callback，后端在线程池中执行同步 agent loop。agent loop 读到模型事件后调用 callback；FastAPI 的异步部分从 queue 取出事件，编码成 SSE 返回。**
 
-### 整条链路
+这几段连接代码就是前面所说的 streaming bridge，它不是另一个服务或插件。Queue 是 Python 自带的对象，没有自己的执行线程。
+
+### 按调用顺序看一遍
+
+下面省略 frontend server 的转发，专门画 runtime 内部的同步／异步衔接。FastAPI 一栏包含 event loop 上执行的调度动作和本次请求的 async task；Queue 一栏只是对象，不是执行线程。创建状态与读 queue 都在 event loop 这边，agent loop 跑在 worker thread 中。
 
 ```mermaid
-flowchart TB
-    L["Anthropic SDK stream<br/>模型文本与 tool_use"]
-    C["ReAct core · 工作线程<br/>on_event 发出事件"]
-    Q["每个请求自己的 asyncio.Queue<br/>call_soon_threadsafe 入队"]
-    R["Runtime FastAPI<br/>EventSourceResponse 编成 SSE"]
-    P["Frontend server<br/>httpx 读取并原样转发"]
-    B["浏览器 fetch reader<br/>解析 SSE 并更新 UI"]
-    L --> C --> Q --> R --> P --> B
+sequenceDiagram
+    autonumber
+    participant U as 浏览器 UI
+    box Runtime 后端进程
+        participant F as FastAPI<br/>async task
+        participant Q as 本次请求的<br/>Queue A
+        participant W as Worker thread<br/>Agent Loop A
+    end
+    participant M as Model API
+
+    U->>F: POST 聊天请求 A
+    F->>Q: 创建 Queue A
+    F->>F: 创建 Callback A<br/>绑定 Queue A
+    F->>W: 线程池安排 Agent Loop A<br/>传入 Callback A
+    F->>Q: await queue.get()<br/>等待事件
+
+    Note over F: 当前 task 挂起<br/>可以处理其他请求
+
+    W->>M: 调用模型 streaming API
+    M-->>W: 返回 text delta
+    W->>W: 调用 Callback A(delta)
+    W->>F: call_soon_threadsafe<br/>调度向 Queue A 入队
+    F->>Q: 执行 put_nowait(delta)
+    Q-->>F: queue.get() 返回 delta<br/>唤醒本次 task
+    F-->>U: 编码成 SSE<br/>沿请求 A 的 response 返回
+
+    Note over F,M: 后续 delta 重复上述过程<br/>始终使用同一个 Callback A 和 Queue A
 ```
 
-**第一层在 `agent_runtime/engine.py`。** 原来的 loop 和 tool 调用是同步代码，`chat_stream()` 把它交给 `ThreadPoolExecutor` 跑。worker 每产生一个事件就调用本次请求的 `on_event`。这个 callback 通过 `loop.call_soon_threadsafe(queue.put_nowait, evt)` 把事件安全地送回 FastAPI event loop。异步 generator 等待 `queue.get()`，有事件就 yield。
+- **1–4：创建并绑定。** 聊天请求进入 runtime，`chat_stream()` 创建 Queue A、Callback A，再把 Callback A 传给线程池中执行的 Agent Loop A。线程可以复用，不一定每次新建。
+- **5：等待事件。** 本次 async task 等待 Queue A；queue 为空时挂起，让 event loop 处理其他请求。
+- **6–8：读取模型输出。** agent loop 通过 SDK 读取模型 stream，收到 delta 后主动调用 Callback A。callback 自己不监听模型。
+- **9–10：跨线程入队。** Callback A 在 worker 中运行，通过 `call_soon_threadsafe` 请 event loop 执行 `queue.put_nowait(delta)`。
+- **11–12：取出并发送。** 入队动作唤醒等待的 task。`chat_stream()` 取出 event 并 yield，route 的 `EventSourceResponse` 编码为 SSE。
 
-`api/routes/chat.py` 再用 `EventSourceResponse` 输出 SSE：`event` 是事件类型，`data` 是 JSON。这一层既解决同步／异步衔接，也把模型细节整理成 UI 能理解的协议。
+源码中的 `chat_stream()` 是 **async generator**：它由 `async def` 定义，内部用 `yield` 逐个产出事件。endpoint 使用 `async for` 消费它，不是只 `await` 一次拿到完整结果。
 
-**第二层在 `agent_frontend/server.py`。** 浏览器请求的是 frontend 的 `/api/sessions/{session_id}/chat`。server 读出这个 session 绑定的 `agent_url`，再用 `httpx.AsyncClient.stream()` 向 runtime 的 `/api/chat` 发 POST。它逐块读取 `aiter_raw()`，直接 yield 给 `StreamingResponse`。
+### call_soon_threadsafe 和 put_nowait 分别做什么？
 
-这里转发的是字节流，**一个网络 chunk 不等于一个 SSE event**。server 不拆 SSE；它设置 `text/event-stream`、`Cache-Control: no-cache` 和 `X-Accel-Buffering: no`，避免这一层主动攒完整响应。中间如果另有 gateway，仍要检查实际的 buffering 配置。
+实际连接两边的是这行代码：
 
-**最后由浏览器解析。** `static/script.js` 用 POST `fetch()` 携带完整 messages，再从 `response.body.getReader()` 持续读。`TextDecoder` 以 streaming 模式处理跨 chunk 的 UTF-8；字符串 buffer 按空行拆完整 SSE frame，支持 LF 和 CRLF，剩余半帧留到下次。然后 `handleStreamEvent()` 按类型更新 UI。
+```python
+loop.call_soon_threadsafe(queue.put_nowait, evt)
+```
 
-这里用 fetch reader，因为聊天请求本身需要 POST JSON body；代码没有使用原生 `EventSource`。
+| 部分 | 作用 | 在哪里执行 |
+|---|---|---|
+| `call_soon_threadsafe(...)` | 安全地把一个函数调用安排到目标 event loop，并唤醒 loop 处理它；不等待那个函数执行完 | 由 worker thread 调用 |
+| `queue.put_nowait(evt)` | 把事件立即放进 queue，不等待空位；唤醒等待取数据的 task | 由 event loop 执行 |
+| `await queue.get()` | 有事件就取出；没有就挂起当前 task，等事件到来 | 本次请求的 async task |
 
-### UI 收到的不只是文字
+可以把第一行读成：**“event loop，请你稍后执行 `queue.put_nowait(evt)`。”**
 
-| 事件 | UI 做什么 |
-| --- | --- |
+注意这里传的是 `queue.put_nowait` 这个函数和参数 `evt`，没有在 worker 里直接调用它。`asyncio.Queue` 不是 thread-safe 的，所以把实际入队动作安排回 event loop；`put_nowait` 本身并不提供跨线程安全保证。
+
+`nowait` 指不等待 queue 出现空位，不是跳过 event loop 调度，也不是直接把数据发到网络。当前 queue 由 `asyncio.Queue()` 创建，没有容量上限；如果改成有界 queue，满了以后 `put_nowait` 会抛 `QueueFull`，需要额外处理。
+
+Queue 本身不会主动发送东西。**是 FastAPI 侧的 async generator 一直在 `await queue.get()`，取到事件后继续执行并 yield。**
+
+### 为什么 A 的输出不会进入 B 的 response？
+
+每次调用 `chat_stream()` 都有自己的局部变量。Callback A 通过 closure 捕获 Queue A；Agent Loop A 拿到的就是 Callback A。本次 async generator 也只读取 Queue A，再沿请求 A 自己的 HTTP response 返回。
+
+| 请求 | agent loop 使用的 callback | callback 写入哪里 | SSE 从哪里读 |
+|---|---|---|---|
+| A | Callback A | Queue A | Queue A |
+| B | Callback B | Queue B | Queue B |
+
+不同请求可以进入同一个 endpoint、共享同一个 engine 和线程池，但不会因此共享局部 queue 和 callback。正常输出不需要再根据 user ID 分发一次。线程复用时，下一次请求仍会创建新状态；hooks 和 Todo 的 thread-local 绑定也会在执行结束后清理。
+
+事件不串流，并不等于资源完全独立。线程池默认最多 64 个 agent threads，审批等待也占线程；模型额度、MCP 和机器资源共享，负载大时仍会排队。无界 queue 在消费变慢时也可能积压事件。这一说明针对多个用户／页面；同一页面仍有 `currentSession` 等共享 UI 状态。
+
+### frontend server 和浏览器各做什么？
+
+实际还有一跳：浏览器 → frontend server → runtime。frontend 用 `httpx.AsyncClient.stream()` 调 runtime，逐块读取 `r.aiter_raw()`，由 `StreamingResponse` 原样转发。每次请求有自己的 upstream response；共享 httpx client 不等于共享 response body。
+
+浏览器用 POST `fetch()` 发送 messages，再通过 `response.body.getReader()` 持续读字节。`TextDecoder` 以 streaming 模式处理 UTF-8，buffer 按空行拆完整 SSE frame，半帧保留到下次读取。**网络 chunk 和 SSE event 不是一一对应的。**
+
+| SSE 事件 | UI 做什么 |
+|---|---|
 | `text_delta` / `text_stop` | 追加文字、渲染 Markdown、关闭当前 text block |
-| `tool_call` / `tool_result` | 显示 tool 卡片、更新结果，并建立对应的历史消息 |
-| `confirm_request` | 显示 Allow / Deny 按钮 |
-| `thinking_*` | 开启 thinking 时显示相应内容 |
+| `tool_call` / `tool_result` | 展示 tool 卡片，重建配对的历史 messages |
+| `confirm_request` | 展示 Allow / Deny；决定经独立 confirm POST 回传 |
+| `thinking_*` | 开启 thinking 时显示内容 |
 | `token_usage` | 显示 token 和费用 |
-| `done` | 标记本轮结束；正常完成路径由 loop 发一次 |
-| `error` | 显示错误；异常退出不能保证也有正常的 `done` |
+| `done` / `error` | 标记本轮正常结束，或显示执行错误 |
 
-tool 参数的 JSON delta 先在 core 累积，模型这次响应完整后才进入 tool dispatch。
+一轮里可以调用模型多次。tool 参数先累积完整，再执行 tool 并把 result 带入下一次模型调用。`done` 在正常整轮结束时发一次；worker 完成后还会向 queue 放一个内部 `None`，让 generator 退出。`None` 不作为 SSE 发给浏览器。
 
-一轮里可能有多次模型调用，所以“一次模型响应结束”和“整个用户请求结束”要分开。当前 core 不在每次模型调用结束时发 `done`；普通 text block 用 `text_stop`，整轮结束才用 `done`。
-
-### History 也沿着这条流重建
-
-浏览器收到 `tool_call` 后建立 assistant 的 `tool_use` block，收到 `tool_result` 后建立与 tool ID 配对的 result。下一次模型输出到来时，UI 把前面的 assistant 和 tool result 分别提交到 messages，保留多次 tool 循环的顺序。
-
-发起请求前会保存用户输入；stream 退出时，`finally` 会提交已收集的内容并尝试保存 session，因此异常时也可能保留部分回答。frontend server 在下一次转发前，用 `_strip_ui_fields()` 去掉 `meta` 和 tool 卡片的 `args_summary` 等 UI 字段，避免这些字段进入 Anthropic 请求导致 400。
+浏览器在 stream 退出时提交已收集的 messages，并尝试保存 session。下一次转发前，frontend server 用 `_strip_ui_fields()` 去掉 UI 的 `meta`、`args_summary` 等额外字段，避免它们进入模型 API 请求。
 
 ### 面试里口头怎么说
 
-> I kept the agent loop synchronous and ran it in a worker thread. Each request had its own callback and queue, which connected the loop to an async SSE response. Then the frontend server forwarded the SSE bytes to the browser without collecting the full response. The browser parsed the events and updated the text, tool cards, and approval controls as they arrived.
+> I kept the agent loop synchronous and ran it in a thread pool. Each request created its own queue and callback. When the loop received a model event, the callback scheduled it onto the event loop's queue. An async generator consumed those events and returned them over SSE. The frontend server forwarded the stream, and the browser rendered it as it arrived.
 
-一句中文记法：**线程里产事件，queue 接回 async，runtime 编 SSE，frontend 原样转发，浏览器解析展示。**
 
 ## 技术追问二：自研 ReAct core 怎么实现？
 
